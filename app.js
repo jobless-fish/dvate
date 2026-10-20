@@ -17,11 +17,16 @@ function render(){
  const filmW=Math.min(w*(small?.64:.38),560),filmX=w*.03,filmY=h-(small?134:110)-filmW*logoRatio;
  const headerW=small?145:224,headerX=(w-headerW)/2,headerY=small?12:14;
  const x=mix(mix(baseX,filmX,out),headerX,scroll),y=mix(mix(baseY,filmY,out),headerY,scroll),width=mix(mix(baseW,filmW,out),headerW,scroll);
- artwork.style.transform=`translate3d(${x}px,${y}px,0) scale(${width/1421})`;
+ const pixelRatio=window.devicePixelRatio||1;
+ const settled=scroll===1;
+ const drawX=settled?Math.round(x*pixelRatio)/pixelRatio:x,drawY=settled?Math.round(y*pixelRatio)/pixelRatio:y;
+ artwork.style.width=`${width}px`;
+ artwork.style.height=`${width*logoRatio}px`;
+ artwork.style.transform=`translate(${drawX}px,${drawY}px)`;
  // Use the same progress for position and color, in both directions.
  const colorProgress=out*(1-scroll);
  const ink=[37,37,31],cream=[255,240,202];
- artwork.style.backgroundColor=`rgb(${ink.map((channel,i)=>mix(channel,cream[i],colorProgress)).join(',')})`;
+ artwork.style.color=`rgb(${ink.map((channel,i)=>mix(channel,cream[i],colorProgress)).join(',')})`;
  $('#endnote').style.top=`${baseY+baseH+28}px`;
  if(phase!=='ended')setPhase(t<2?'intro':closing>.82?'outro':'playing');seek.value=Math.round(t/d*1000);seek.style.setProperty('--progress',`${t/d*100}%`);clock.textContent=`${format(t)} / ${format(d)}`;
  }}
@@ -29,9 +34,9 @@ function render(){
  updateReviews();
  requestAnimationFrame(render)
 }
-function syncPlay(){play.textContent=film.paused?'▶':'Ⅱ';play.setAttribute('aria-label',film.paused?'영상 재생':'영상 일시정지')}
+function syncPlay(){play.textContent=film.paused?'▶':'Ⅱ';play.setAttribute('aria-label',film.paused?'영상 재생':'영상 일시정지');const surface=$('#film-toggle');surface.setAttribute('aria-label',film.paused?'영상 재생':'영상 일시정지');surface.querySelector('span').textContent=film.paused?'영상 재생':'영상 일시정지'}
 film.addEventListener('ended',()=>{if(!ready||!film.ended||film.currentTime<film.duration-.1)return;setPhase('ended');buffering.hidden=true;status.textContent='ONCE MORE, SLOWLY.';syncPlay()});film.addEventListener('waiting',()=>{if(ready&&!film.ended)buffering.hidden=false});film.addEventListener('playing',()=>{buffering.hidden=true;syncPlay()});film.addEventListener('pause',()=>{buffering.hidden=true;syncPlay()});film.addEventListener('canplay',()=>buffering.hidden=true);film.addEventListener('error',()=>{if(ready){status.textContent='영상을 불러오지 못했습니다';start.hidden=false;start.textContent='다시 불러오기 ↗';start.onclick=loadFilm}});
-$('#replay').onclick=begin;start.onclick=begin;play.onclick=()=>{if(!ready)return;if(phase==='ended')begin();else if(film.paused)film.play().catch(()=>{start.hidden=false;start.onclick=()=>film.play()});else film.pause()};sound.onclick=()=>{film.muted=!film.muted;sound.innerHTML=`SOUND ${film.muted?'OFF':'ON'} <span>↗</span>`;sound.setAttribute('aria-label',film.muted?'소리 켜기':'소리 끄기');sound.setAttribute('aria-pressed',String(!film.muted))};seek.oninput=()=>{if(!ready)return;setPhase('playing');film.currentTime=seek.value/1000*film.duration;status.textContent=''};document.addEventListener('visibilitychange',()=>{if(document.hidden&&ready)film.pause()});const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
+$('#replay').onclick=begin;start.onclick=begin;function togglePlayback(){if(!ready)return;if(phase==='ended')begin();else if(film.paused)film.play().catch(()=>{start.hidden=false;start.onclick=()=>film.play()});else film.pause()}play.onclick=togglePlayback;$('#film-toggle').onclick=togglePlayback;sound.onclick=()=>{film.muted=!film.muted;sound.innerHTML=`SOUND ${film.muted?'OFF':'ON'} <span>↗</span>`;sound.setAttribute('aria-label',film.muted?'소리 켜기':'소리 끄기');sound.setAttribute('aria-pressed',String(!film.muted))};seek.oninput=()=>{if(!ready)return;setPhase('playing');film.currentTime=seek.value/1000*film.duration;status.textContent=''};document.addEventListener('visibilitychange',()=>{if(document.hidden&&ready)film.pause()});const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
 const parallaxItems=[...document.querySelectorAll('.image-spread figure img,.bakery>img')];
 const revealItems=[...document.querySelectorAll('.section-label,.story h2,.story-bottom>* , .image-spread figure,.image-aside>* , .menu-heading>* , .menu-grid>div,.menu-row,.bakery>div>* , .values article,.visit h2,.visit-bottom>*')];
 const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('is-visible')}else if(entry.intersectionRatio===0){entry.target.classList.remove('is-visible')}}),{threshold:.12});
