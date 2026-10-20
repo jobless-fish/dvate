@@ -57,3 +57,8 @@ header{display:grid;grid-template-columns:minmax(0,1fr) auto auto;column-gap:30p
 #film-toggle:focus-visible{outline:2px solid var(--cream);outline-offset:-8px}
 header .wordmark{font-size:11px;letter-spacing:.04em}
 @media(max-width:700px){header .wordmark{font-size:8px;letter-spacing:.015em}header{column-gap:10px}header nav{gap:11px}}
+
+/* Align the contact information with the foot of the three-line name. */
+.visit-layout{align-items:end}.visit-bottom dl>div:last-child{padding-bottom:0}
+.review-title-window{margin-bottom:55px}.review-text{font-size:clamp(21px,2.1vw,32px);line-height:1.55;letter-spacing:-.035em;margin:25px 0 45px}
+@media(max-width:700px){.review-title-window{margin-bottom:35px}}
